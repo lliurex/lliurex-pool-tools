@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#llx-tag-bionic
+
+echo ""
+echo "JENKINS:"
+echo -e "\thttp://jenkins.gva.es/job/LLIUREXPOOLBIONIC_PRE/"
+echo -e "\thttp://jenkins.gva.es/job/LLIUREXPOOLBIONIC_PRO/"
+
+

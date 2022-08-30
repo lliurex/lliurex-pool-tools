@@ -1,0 +1,5 @@
+#!/bin/bash
+
+REPO_DIR="/datos/lliurex2106/focal"
+
+reprepro -b $REPO_DIR -v --noskipold --ask-passphrase update

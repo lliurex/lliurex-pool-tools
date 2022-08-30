@@ -1,0 +1,19 @@
+#!/bin/bash
+
+LOCAL_REPO="/datos/lliurex2106/focal/"
+SVN_REPO="/datos/lliurex2106/lliurexpoolfocal/trunk/fuentes/bin"
+
+rsync -avC --delete $LOCAL_REPO $SVN_REPO
+
+OLD_PWD=$(pwd)
+
+cd $SVN_REPO
+
+DATE=$(date)
+
+llx-svn-add-remove-changes 
+llx-svn-commit-changes "$DATE update"
+telegram-send-message "FOCAL rsynced"
+
+cd $OLD_PWD
+

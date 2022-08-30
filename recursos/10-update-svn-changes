@@ -1,0 +1,14 @@
+#!/bin/bash
+
+SVN_REPO="/datos/isos/lliurexpoolrecursos/fuentes/bin/"
+
+OLD_PWD=$(pwd)
+cd $SVN_REPO
+
+DATE=$(date)
+
+llx-svn-add-remove-changes 
+llx-svn-commit-changes "$DATE update"
+
+cd $OLD_PWD
+

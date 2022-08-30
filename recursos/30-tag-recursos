@@ -1,0 +1,8 @@
+#!/bin/bash
+
+llx-tag-resources
+
+echo ""
+echo "JENKINS:"
+echo -e "\thttp://jenkins.gva.es/job/LLIUREXPOOLRECURSOS_PRO/"
+

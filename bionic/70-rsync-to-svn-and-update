@@ -1,0 +1,18 @@
+#!/bin/bash
+
+LOCAL_REPO="/datos/lliurex1909/bionic/"
+SVN_REPO="/datos/lliurex1909/lliurexgvabionic/fuentes/bin"
+
+rsync -avC --delete $LOCAL_REPO $SVN_REPO
+
+OLD_PWD=$(pwd)
+
+cd $SVN_REPO
+
+DATE=$(date)
+
+llx-svn-add-remove-changes 
+llx-svn-commit-changes "$DATE update"
+
+cd $OLD_PWD
+

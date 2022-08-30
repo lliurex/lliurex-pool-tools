@@ -1,0 +1,5 @@
+#!/bin/bash
+
+REPO_DIR="/datos/lliurex1909/baikonur-stable"
+
+reprepro -b $REPO_DIR -v  update

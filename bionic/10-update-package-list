@@ -1,0 +1,175 @@
+#!/bin/bash
+
+# LLIUREX-POOL INFO
+
+SECTION="lists"
+WEIGHT=1
+COMMENT="Update package list using our frozen Ubuntu mirror"
+
+
+# COMMON VALUES
+#
+
+DISTRO="bionic"
+
+# Config base dir
+CONFIG_PATH="/home/lliurex/pool/etc/llx-pool/basic-pkg-lists/${DISTRO}/"
+
+# Package lists
+SUPPORTED_FILE="${CONFIG_PATH}/extra-pkg-list"
+METAS_FILE="${CONFIG_PATH}/llx-metas-list"
+UDEBS_FILE="${CONFIG_PATH}/udeb-list"
+UDEBS_EXTRA_FILE="${CONFIG_PATH}/udeb-extra"
+
+# Frozen lliurex pacakges list
+FROZEN_FILE="${CONFIG_PATH}/frozen-list"
+
+#PATHS
+CHROOT_BASE="/datos/lliurex1909/bootstraps"
+LLX_PRENAME="pre-bionic"
+LLX_NAME="bionic"
+LLX_MIRROR="/datos/lliurex1909/bionic"
+NEON_MIRROR="/datos/lliurex1909/neon"
+MONO_MIRROR="/datos/lliurex1909/mono-bionic"
+LLX_PRE_MIRROR="/datos/lliurex1909/pre-bionic"
+UBUNTU_MIRROR="/datos/lliurex1909/ubuntu/"
+
+AMD64_CHROOT="${CHROOT_BASE}/amd64"
+I386_CHROOT="${CHROOT_BASE}/i386"
+
+PACKAGE_LIST="PackageList.txt"
+
+
+EXTRA_SUPPORTED_LIST="$(cat ${SUPPORTED_FILE} | tr "\n" " ")"
+
+
+META_LIST=$(cat ${METAS_FILE} | tr "\n" " ")
+UDEB_LIST=$(cat ${UDEBS_FILE} | tr "\n" " ")
+
+
+# Copy sources-list files
+
+cp $CHROOT_BASE/sources.list.frozen $AMD64_CHROOT/etc/apt/sources.list
+#cp $CHROOT_BASE/sources.list.frozen $I386_CHROOT/etc/apt/sources.list
+
+cp $CHROOT_BASE/debian-installer.frozen $AMD64_CHROOT/etc/apt/sources.list.d/debian-installer.list
+#cp $CHROOT_BASE/debian-installer.frozen $I386_CHROOT/etc/apt/sources.list.d/debian-installer.list
+
+# Mount ubuntu-mirror
+
+sudo mount --bind $UBUNTU_MIRROR $AMD64_CHROOT/srv
+#mount --bind $UBUNTU_MIRROR $I386_CHROOT/srv
+
+sudo mount --bind /srv/nfs/lliurex1909/bionic-included $AMD64_CHROOT/mnt
+
+mkdir -p $AMD64_CHROOT/neon
+sudo mount --bind $NEON_MIRROR $AMD64_CHROOT/neon
+
+mkdir -p $AMD64_CHROOT/mono
+mount --bind $MONO_MIRROR $AMD64_CHROOT/mono
+
+#mount --bind /srv/nfs/lliurex1909/xenial-included $I386_CHROOT/mnt
+
+for ch in $AMD64_CHROOT; do
+
+	echo "[${ch}] Updating apt..."
+	sudo chroot ${ch} apt-get update 2>/dev/null 1>/dev/null
+	echo "lliurex-resolver -i ${UDEB_LIST} ${META_LIST} ${EXTRA_SUPPORTED_LIST} -b sddm -o ${PACKAGE_LIST} -d"
+	sudo chroot ${ch} lliurex-resolver -i ${UDEB_LIST} ${META_LIST} ${EXTRA_SUPPORTED_LIST} -b sddm pinentry-qt -o ${PACKAGE_LIST} -d -c
+	echo "The path of list is: "
+	echo "${ch}"/"${PACKAGE_LIST}"
+
+done
+
+# Umount ubuntu-mirror
+
+sudo umount -l $AMD64_CHROOT/srv
+#umount $I386_CHROOT/srv
+
+sudo umount -l $AMD64_CHROOT/mnt
+#umount $I386_CHROOT/mnt
+
+sudo umount -l $AMD64_CHROOT/neon
+
+sudo umount -l $AMD64_CHROOT/mono
+
+# Order and unique packages
+cat $AMD64_CHROOT/$PACKAGE_LIST | sort -u > /tmp/$PACKAGE_LIST
+cp /tmp/$PACKAGE_LIST $AMD64_CHROOT/$PACKAGE_LIST
+
+#cat $I386_CHROOT/$PACKAGE_LIST | sort -u > /tmp/$PACKAGE_LIST
+#cp /tmp/$PACKAGE_LIST $I386_CHROOT/$PACKAGE_LIST
+
+
+
+#Remove frozen apps from list from Ubuntu repos
+echo "# Frozen apps!"
+cp $AMD64_CHROOT/$PACKAGE_LIST $AMD64_CHROOT/$PACKAGE_LIST.frozen
+#cp $I386_CHROOT/$PACKAGE_LIST $I386_CHROOT/$PACKAGE_LIST.frozen
+
+# Removing frozen packages
+while read line
+do
+    pkg=$line
+   echo " [ LliureX Mega Resolver ]  * Frozen :  $pkg"
+    sed -i "/^$pkg[[:blank:]]\+/d" $AMD64_CHROOT/$PACKAGE_LIST.frozen
+   sed -i "/^$pkg[[:blank:]]\+/d" $I386_CHROOT/$PACKAGE_LIST.frozen
+done < ${FROZEN_FILE}
+
+echo ""
+echo ""
+echo ""
+
+echo "****  SHOWING DIFFERENCIES (If empty, there are no changes)"
+echo "[AMD64]"
+diff -Nuar ${LLX_MIRROR}/conf/amd64.txt ${AMD64_CHROOT}/${PACKAGE_LIST}
+
+echo "[FROZEN AMD64]"
+diff -Nuar ${LLX_MIRROR}/conf/amd64-frozen.txt ${AMD64_CHROOT}/${PACKAGE_LIST}.frozen
+
+echo ""
+echo -n " * Press any key to continue... "
+read
+
+#echo "[i386]"
+#diff -Nuar ${LLX_PRE_MIRROR}/conf/i386.txt ${I386_CHROOT}/${PACKAGE_LIST}
+
+#echo "[FROZEN i386]"
+#diff -Nuar ${LLX_PRE_MIRROR}/conf/i386-frozen.txt ${I386_CHROOT}/${PACKAGE_LIST}.frozen
+
+#echo ""
+#echo -n " * Press any key to continue... "
+#read
+#echo ""
+
+echo ""
+
+echo -n "# Copy new packages list to $LLX_PRENAME ? [y/n]: "
+read x
+if [ "$x" = "y" ]; then
+    #cp ${I386_CHROOT}/${PACKAGE_LIST} ${LLX_PRE_MIRROR}/conf/i386.txt
+    cp ${AMD64_CHROOT}/${PACKAGE_LIST} ${LLX_PRE_MIRROR}/conf/amd64.txt
+    
+    #cp ${I386_CHROOT}/${PACKAGE_LIST}.frozen ${LLX_PRE_MIRROR}/conf/i386-frozen.txt
+    cp ${AMD64_CHROOT}/${PACKAGE_LIST}.frozen ${LLX_PRE_MIRROR}/conf/amd64-frozen.txt
+    
+    
+else
+    echo "Nothing to do."
+fi
+
+echo -n "# Copy new packages list to $LLX_NAME ? [y/n]: "
+read x
+if [ "$x" = "y" ]; then
+    
+    #cp ${I386_CHROOT}/${PACKAGE_LIST} ${LLX_MIRROR}/conf/i386.txt
+    cp ${AMD64_CHROOT}/${PACKAGE_LIST} ${LLX_MIRROR}/conf/amd64.txt
+    
+    #cp ${I386_CHROOT}/${PACKAGE_LIST}.frozen ${LLX_MIRROR}/conf/i386-frozen.txt
+    cp ${AMD64_CHROOT}/${PACKAGE_LIST}.frozen ${LLX_MIRROR}/conf/amd64-frozen.txt
+    
+else
+    echo "Nothing to do."
+fi
+
+

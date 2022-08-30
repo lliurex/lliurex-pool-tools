@@ -1,0 +1,8 @@
+#!/bin/bash
+
+llx-tag-focal
+
+echo ""
+echo "JENKINS:"
+echo -e "\thttp://jenkins.gva.es/job/LLIUREXPOOLFOCAL_PRE/"
+echo -e "\thttp://jenkins.gva.es/job/LLIUREXPOOLFOCAL_PRO/"
