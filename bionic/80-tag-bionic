@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#llx-tag-bionic
+llx-tag-bionic
 
 echo ""
 echo "JENKINS:"
