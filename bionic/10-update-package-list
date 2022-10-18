@@ -56,17 +56,13 @@ cp $CHROOT_BASE/debian-installer.frozen $AMD64_CHROOT/etc/apt/sources.list.d/deb
 #cp $CHROOT_BASE/debian-installer.frozen $I386_CHROOT/etc/apt/sources.list.d/debian-installer.list
 
 # Mount ubuntu-mirror
-
 sudo mount --bind $UBUNTU_MIRROR $AMD64_CHROOT/srv
 #mount --bind $UBUNTU_MIRROR $I386_CHROOT/srv
-
-sudo mount --bind /srv/nfs/lliurex1909/bionic-included $AMD64_CHROOT/mnt
-
+sudo mount --bind /datos/lliurex1909/bionic-included $AMD64_CHROOT/mnt
 mkdir -p $AMD64_CHROOT/neon
 sudo mount --bind $NEON_MIRROR $AMD64_CHROOT/neon
-
 mkdir -p $AMD64_CHROOT/mono
-mount --bind $MONO_MIRROR $AMD64_CHROOT/mono
+sudo mount --bind $MONO_MIRROR $AMD64_CHROOT/mono
 
 #mount --bind /srv/nfs/lliurex1909/xenial-included $I386_CHROOT/mnt
 
@@ -82,16 +78,12 @@ for ch in $AMD64_CHROOT; do
 done
 
 # Umount ubuntu-mirror
-
-sudo umount -l $AMD64_CHROOT/srv
+sudo umount  $AMD64_CHROOT/srv
 #umount $I386_CHROOT/srv
-
-sudo umount -l $AMD64_CHROOT/mnt
+sudo umount  $AMD64_CHROOT/mnt
 #umount $I386_CHROOT/mnt
-
-sudo umount -l $AMD64_CHROOT/neon
-
-sudo umount -l $AMD64_CHROOT/mono
+sudo umount  $AMD64_CHROOT/neon
+sudo umount  $AMD64_CHROOT/mono
 
 # Order and unique packages
 cat $AMD64_CHROOT/$PACKAGE_LIST | sort -u > /tmp/$PACKAGE_LIST
@@ -171,5 +163,4 @@ if [ "$x" = "y" ]; then
 else
     echo "Nothing to do."
 fi
-
 
