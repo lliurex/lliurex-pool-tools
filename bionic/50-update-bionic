@@ -1,5 +1,5 @@
 #!/bin/bash
 
-REPO_DIR="/datos/lliurex2106/baikonur-stable/"
+REPO_DIR="/datos/lliurex1909/bionic/"
 
-reprepro -b $REPO_DIR -v update
+reprepro -b $REPO_DIR -v --noskipold --ask-passphrase update
